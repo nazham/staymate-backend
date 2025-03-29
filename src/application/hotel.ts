@@ -15,7 +15,24 @@ export const getAllHotels = async (
   next: NextFunction
 ) => {
   try {
-    const hotels = await Hotel.find();
+    const { location, sort } = req.query;
+
+    // Build query object
+    const query: any = {};
+    if (location && location !== "ALL") {
+      query.location = location;
+    }
+
+    // Build sort object
+    let sortOptions: any = {};
+    if (sort === "asc") {
+      sortOptions.price = 1;
+    } else if (sort === "desc") {
+      sortOptions.price = -1;
+    }
+
+    // Fetch hotels with filtering and sorting
+    const hotels = await Hotel.find(query).sort(sortOptions);
     res.status(200).json(hotels);
     return;
   } catch (error) {
