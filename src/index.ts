@@ -14,14 +14,13 @@ const app = express();
 app.use(clerkMiddleware());
 // Middleware to parse JSON data in the request body
 app.use(express.json());
-app.use(cors({ origin: "https://staymate-frontend.vercel.app" }));
+app.use(
+  cors({
+    origin: ["https://staymate-frontend.vercel.app", "http://localhost:5173"],
+  })
+);
 
 connectDB();
-
-// app.use((req, res, next) => {
-//   console.log("Hello World");
-//   next();
-// });
 
 app.use("/api/hotels", hotelsRouter);
 app.use("/api/bookings", bookingsRouter);
