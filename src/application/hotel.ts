@@ -40,6 +40,8 @@ export const getAllHotels = async (
   }
 };
 
+import mongoose from "mongoose";
+
 export const getHotelById = async (
   req: Request,
   res: Response,
@@ -47,6 +49,11 @@ export const getHotelById = async (
 ) => {
   try {
     const hotelId = req.params.id;
+    
+    if (!mongoose.Types.ObjectId.isValid(hotelId)) {
+      throw new NotFoundError("Hotel not found");
+    }
+
     const hotel = await Hotel.findById(hotelId);
     if (!hotel) {
       throw new NotFoundError("Hotel not found");
@@ -129,6 +136,11 @@ export const deleteHotel = async (
 ) => {
   try {
     const hotelId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(hotelId)) {
+      throw new NotFoundError("Hotel not found");
+    }
+
     await Hotel.findByIdAndDelete(hotelId);
 
     // Return the response
@@ -147,6 +159,10 @@ export const updateHotel = async (
   try {
     const hotelId = req.params.hotelId;
     const updatedHotel = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(hotelId)) {
+      throw new NotFoundError("Hotel not found");
+    }
 
     // Validate the request data
     if (
