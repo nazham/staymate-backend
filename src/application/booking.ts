@@ -71,3 +71,61 @@ export const getAllBookings = async (
     next(error);
   }
 };
+
+export const getMyBookings = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = req.auth;
+    const bookings = await Booking.find({ userId: user.userId }).populate("hotelId");
+
+    res.status(200).json(bookings);
+    return;
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const cancelBooking = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const bookingId = req.params.id;
+    const user = req.auth;
+
+    const booking = await Booking.findOne({ 
+      _id: bookingId, 
+      userId: user.userId 
+    });
+
+    if (!booking) {
+      res.status(404).json({ message: "Booking not found or not authorized" });
+      return;
+    }
+
+    // Validation: Cannot cancel if the check-in date is in the past
+    const checkInDate = new Date(booking.checkIn);
+    const currentDate = new Date();
+    
+    // Reset times to compare just the dates
+    checkInDate.setHours(0, 0, 0, 0);
+    currentDate.setHours(0, 0, 0, 0);
+
+    if (checkInDate <= currentDate) {
+      res.status(400).json({ message: "Cannot cancel a booking that has already started or is in the past." });
+      return;
+    }
+
+    // Delete the booking after validation passes
+    await Booking.findByIdAndDelete(bookingId);
+
+    res.status(200).json({ message: "Booking cancelled successfully" });
+    return;
+  } catch (error) {
+    next(error);
+  }
+};
